@@ -76,14 +76,20 @@ async function dataExists(path){//comprueba si eso existe
 }
 
 
+async function resetLocal(){//borra todos los archivos temporales alojados en este servidor por culpa de las transferencias
+    try{
 
+    } catch (error) {console.error(error);}
+}
 
 
 
 (async()=>{//ejemplo:
-    //const filesList = await getAllFiles("");
-    //const fileUploaded = await uploadFile("./archivo.txt", "/archivoup.txt");
-    //const filesList2 = await getAllFiles("");
-    //const fileDownloaded = await downloadFile("/archivoup.txt", "./archivodown.txt");
+    const filesList = await getAllFiles("");
+    const fileUploaded = await uploadFile("./archivo.txt", "/archivoup.txt");
+    const filesList2 = await getAllFiles("");
+    const fileDownloaded = await downloadFile("/archivoup.txt", "./archivodown.txt");
+    deleteData("/archivoup.txt");
+    createFolder("/asdf");
     deleteData("/asdf");
 })();
