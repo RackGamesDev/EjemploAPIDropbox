@@ -40,6 +40,7 @@ async function downloadFile(fileToDownload, path){//devuelve un archivo de la nu
     try {
         const fileDownloaded = await dbx.filesDownload({path: fileToDownload});
         const fileDownloadedIntoServer = fs.writeFileSync(path, fileDownloaded.result.fileBinary, 'binary');
+        fs.unlink(path, ()=>{});
         return fileDownloadedIntoServer;
     } catch (error) {console.error(error);}
 }
@@ -51,45 +52,51 @@ async function createFolder(path){//crea una carpeta vacia, ruta en la nube
     } catch (error) {console.error(error);}
 }
 
-async function moveData(pathA, pathB){//mueve un archivo o una carpeta, lo que sea pathA a pathB
+async function moveData(pathA, pathB, name){//mueve un archivo o una carpeta, lo que sea pathA a pathB, se requiere el nombre nuevo en la nube
     try {
-        //
+        const fileDownloaded = await dbx.filesDownload({path: pathA});
+        const fileDownloadedIntoServer = await fs.writeFileSync("./files/" + name, fileDownloaded.result.fileBinary, 'binary');
+        const fileUploaded = await uploadFile("./files/" + name, pathB + name);
+        await deleteData(pathA);
+        await fs.unlink("./files/" + name, ()=>{});
     } catch (error) {console.error(error);}
+}
+async function copyData(pathA, pathB, name){//copia un archivo o una carpeta, lo que sea pathA a pathB, se requiere el nombre nuevo en la nube
+    try {
+        const fileDownloaded = await dbx.filesDownload({path: pathA});
+        const fileDownloadedIntoServer = await fs.writeFileSync("./files/" + name, fileDownloaded.result.fileBinary, 'binary');
+        const fileUploaded = await uploadFile("./files/" + name, pathB + name);
+        await fs.unlink("./files/" + name, ()=>{});
+    } catch (error) {console.error(error);}
+}
+async function rename(path, oldName, name){//renombra un archivo, ubicacion, nuevo nombre
+    try {
+        const fileDownloaded = await dbx.filesDownload({path: path + oldName});
+        const fileDownloadedIntoServer = await fs.writeFileSync("./files/" + oldName, fileDownloaded.result.fileBinary, 'binary');
+        const fileUploaded = await uploadFile("./files/" + oldName, path + name);
+        await deleteData(path + oldName);
+        await fs.unlink("./files/" + oldName, ()=>{});
+    } catch (error) {console.error(error); return false}
 }
 
 async function fileExists(path){//comprueba el archivo existe y efectivamente es un archivo
     try {
-        //
-    } catch (error) {console.error(error);}
-}
-
-async function folderExists(path){//comprueba la carpeta existe y efectivamente es una carpeta
-    try {
-        //
-    } catch (error) {console.error(error);}
-}
-
-async function dataExists(path){//comprueba si eso existe
-    try {
-        //
-    } catch (error) {console.error(error);}
-}
-
-
-async function resetLocal(){//borra todos los archivos temporales alojados en este servidor por culpa de las transferencias
-    try{
-
-    } catch (error) {console.error(error);}
+        const fileDownloaded = await dbx.filesDownload({path: path});
+        return fileDownloaded != null;
+    } catch (error) {/*console.error(error);*/ return false}
 }
 
 
 
 (async()=>{//ejemplo:
-    const filesList = await getAllFiles("");
-    const fileUploaded = await uploadFile("./archivo.txt", "/archivoup.txt");
-    const filesList2 = await getAllFiles("");
-    const fileDownloaded = await downloadFile("/archivoup.txt", "./archivodown.txt");
-    deleteData("/archivoup.txt");
-    createFolder("/asdf");
-    deleteData("/asdf");
+    //const filesList = await getAllFiles("");
+    //const fileUploaded = await uploadFile("./files/archivo.txt", "/archivoup.txt");
+    //const filesList2 = await getAllFiles("");
+    //const fileDownloaded = await downloadFile("/archivoup.txt", "./files/archivodown.txt");
+    //deleteData("/archivoup.txt");
+    //createFolder("/asdf");
+    //deleteData("/asdf");
+    //await moveData("/ca/aa.txt", "/cb/", "aa.txt");
+    //rename("/", "aa.txt", "bb.txt");
+    //console.log(await fileExists("/bab.txt"));
 })();
